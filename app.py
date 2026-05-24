@@ -124,14 +124,10 @@ h1,h2,h3,h4,h5,p,label,span {
 # ---------------- TITLE ----------------
 
 st.markdown(
-    "<div class='main-title'>🗳️ Tamil Nadu Election AI Dashboard</div>",
+    "<div class='main-title'>🗳️ TAMIL NADU ELECTION PREDICTION</div>",
     unsafe_allow_html=True
 )
 
-st.markdown(
-    "<div class='sub-title'>Machine Learning Based Election Prediction System</div>",
-    unsafe_allow_html=True
-)
 
 # ---------------- LOAD DATA ----------------
 
