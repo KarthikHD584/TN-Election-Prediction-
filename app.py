@@ -1,176 +1,221 @@
+# ==============================
+# STREAMLIT APP - Election Winner Prediction
+# ==============================
+
+# Save this file as:
+# app.py
+
+import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
-
-df = pd.read_csv("eci_results_tamilnadu_2026.csv")
-
-print(df.head())
-
-print(df.info())
-
-print(df.shape)
-
-print(df.columns)
-print(df.isnull().sum())
-df = df.dropna()
-
-# Create winner column
-# Candidate with highest votes in each constituency is winner
-
-max_votes = df.groupby('Constituency')['Total Votes'].transform('max')
-
-df['Winner'] = np.where(df['Total Votes'] == max_votes, 1, 0)
-
-print(df[['Constituency', 'Candidate', 'Total Votes', 'Winner']].head())
-
-# Save original party names
-party_names = df['Party']
-
-# Encode party names
-party_encoder = LabelEncoder()
-df['Party_Encoded'] = party_encoder.fit_transform(df['Party'])
-
-# Display party mapping
-party_mapping = pd.DataFrame({
-    'Party Name': party_encoder.classes_,
-    'Encoded Value': range(len(party_encoder.classes_))
-})
-
-print(party_mapping)
-
-const_encoder = LabelEncoder()
-df['Constituency_Encoded'] = const_encoder.fit_transform(df['Constituency'])
-
-#Select Features and Target
-X = df[[
-    'EVM Votes',
-    'Postal Votes',
-    'Total Votes',
-    '% Votes',
-    'Party_Encoded',
-    'Constituency_Encoded'
-]]
-
-y = df['Winner']
-
-#Split Dataset
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42
-)
-
-#Train Logistic Regression Model
-lr_model = LogisticRegression(max_iter=1000)
-lr_model.fit(X_train, y_train)
-
-lr_pred = lr_model.predict(X_test)
-
-print('Logistic Regression Accuracy:', accuracy_score(y_test, lr_pred))
-
-rf_model = RandomForestClassifier(
-    n_estimators=100,
-    random_state=42
-)
-
-rf_model.fit(X_train, y_train)
-
-rf_pred = rf_model.predict(X_test)
-
-print('Random Forest Accuracy:', accuracy_score(y_test, rf_pred))
-
-xgb_model = XGBClassifier(
-    use_label_encoder=False,
-    eval_metric='logloss'
-)
-
-xgb_model.fit(X_train, y_train)
-
-xgb_pred = xgb_model.predict(X_test)
-
-print('XGBoost Accuracy:', accuracy_score(y_test, xgb_pred))
-
-lr_acc = accuracy_score(y_test, lr_pred)
-rf_acc = accuracy_score(y_test, rf_pred)
-xgb_acc = accuracy_score(y_test, xgb_pred)
-
-models = ['Logistic Regression', 'Random Forest', 'XGBoost']
-accuracies = [lr_acc, rf_acc, xgb_acc]
-
-plt.figure(figsize=(8,5))
-plt.bar(models, accuracies)
-plt.title('Model Accuracy Comparison')
-plt.ylabel('Accuracy')
-plt.show()
-
-party_votes = df.groupby('Party')['Total Votes'].sum().sort_values(ascending=False).head(10)
-
-party_votes.plot(kind='bar', figsize=(12,6))
-plt.title('Top 10 Parties by Total Votes')
-plt.xlabel('Party')
-plt.ylabel('Votes')
-plt.show()
-
-cm = confusion_matrix(y_test, xgb_pred)
-
-plt.figure(figsize=(6,4))
-sns.heatmap(cm, annot=True, fmt='d')
-plt.title('Confusion Matrix')
-plt.xlabel('Predicted')
-plt.ylabel('Actual')
-plt.show()
-
-print(classification_report(y_test, xgb_pred))
-
-#Feature Importance
-importance = pd.DataFrame({
-    'Feature': X.columns,
-    'Importance': xgb_model.feature_importances_
-})
-
-importance = importance.sort_values(by='Importance', ascending=False)
-
-print(importance)
-
-#Predict Future Election Winner
-sample_data = pd.DataFrame({
-    'EVM Votes': [70000],
-    'Postal Votes': [500],
-    'Total Votes': [70500],
-    '% Votes': [40.2],
-    'Party_Encoded': [86],
-    'Constituency_Encoded': [3]
-})
-
-prediction = xgb_model.predict(sample_data)
-
-if prediction[0] == 1:
-    print('Predicted Result: Winner')
-else:
-    print('Predicted Result: Not Winner')
-
-    encoded_party = 86
-
-actual_party_name = party_encoder.inverse_transform([encoded_party])
-
-print('Party Name:', actual_party_name[0])
-
 import joblib
+import base64
 
-joblib.dump(xgb_model, 'tamilnadu_election_model.pkl')
+# ------------------------------
+# PAGE CONFIG
+# ------------------------------
 
-print('Model saved successfully')
+st.set_page_config(
+    page_title="Tamil Nadu Election Prediction",
+    page_icon="🗳️",
+    layout="wide"
+)
 
-loaded_model = joblib.load('tamilnadu_election_model.pkl')
+# ------------------------------
+# CUSTOM BACKGROUND + DESIGN
+# ------------------------------
+
+page_bg = """
+<style>
+
+[data-testid="stAppViewContainer"]{
+background: linear-gradient(to right, #141e30, #243b55);
+color: white;
+}
+
+[data-testid="stHeader"]{
+background: rgba(0,0,0,0);
+}
+
+.big-title{
+font-size:55px;
+font-weight:bold;
+text-align:center;
+color:white;
+padding-top:20px;
+}
+
+.sub-title{
+font-size:22px;
+text-align:center;
+color:#d1d1d1;
+margin-bottom:40px;
+}
+
+.result-win{
+background-color:#00c853;
+padding:20px;
+border-radius:15px;
+text-align:center;
+font-size:30px;
+font-weight:bold;
+color:white;
+}
+
+.result-lose{
+background-color:#d50000;
+padding:20px;
+border-radius:15px;
+text-align:center;
+font-size:30px;
+font-weight:bold;
+color:white;
+}
+
+.stButton>button{
+width:100%;
+background-color:#ff9800;
+color:white;
+font-size:20px;
+font-weight:bold;
+border-radius:10px;
+height:3em;
+border:none;
+}
+
+.stButton>button:hover{
+background-color:#ff5722;
+color:white;
+}
+
+.css-1d391kg{
+background-color:#111111;
+}
+
+</style>
+"""
+
+st.markdown(page_bg, unsafe_allow_html=True)
+
+# ------------------------------
+# LOAD MODEL
+# ------------------------------
+
+model = joblib.load("tamilnadu_election_model.pkl")
+
+# ------------------------------
+# TITLE
+# ------------------------------
+
+st.markdown(
+    '<p class="big-title">🗳 Tamil Nadu Election Winner Prediction</p>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    '<p class="sub-title">Machine Learning Based Election Prediction System</p>',
+    unsafe_allow_html=True
+)
+
+# ------------------------------
+# SIDEBAR
+# ------------------------------
+
+st.sidebar.title("📌 Input Election Details")
+
+evm_votes = st.sidebar.number_input(
+    "EVM Votes",
+    min_value=0,
+    value=70000
+)
+
+postal_votes = st.sidebar.number_input(
+    "Postal Votes",
+    min_value=0,
+    value=500
+)
+
+total_votes = st.sidebar.number_input(
+    "Total Votes",
+    min_value=0,
+    value=70500
+)
+
+vote_percent = st.sidebar.slider(
+    "% Votes",
+    0.0,
+    100.0,
+    40.2
+)
+
+party_encoded = st.sidebar.number_input(
+    "Party Encoded Value",
+    min_value=0,
+    value=86
+)
+
+constituency_encoded = st.sidebar.number_input(
+    "Constituency Encoded Value",
+    min_value=0,
+    value=3
+)
+
+# ------------------------------
+# MAIN CONTENT
+# ------------------------------
+
+col1, col2 = st.columns(2)
+
+with col1:
+
+    st.subheader("📊 Candidate Input Data")
+
+    input_df = pd.DataFrame({
+        'EVM Votes': [evm_votes],
+        'Postal Votes': [postal_votes],
+        'Total Votes': [total_votes],
+        '% Votes': [vote_percent],
+        'Party_Encoded': [party_encoded],
+        'Constituency_Encoded': [constituency_encoded]
+    })
+
+    st.dataframe(input_df, use_container_width=True)
+
+with col2:
+
+    st.subheader("🤖 ML Prediction")
+
+    if st.button("Predict Winner"):
+
+        prediction = model.predict(input_df)
+
+        if prediction[0] == 1:
+
+            st.markdown(
+                '<div class="result-win">🏆 Predicted Result: WINNER</div>',
+                unsafe_allow_html=True
+            )
+
+            st.balloons()
+
+        else:
+
+            st.markdown(
+                '<div class="result-lose">❌ Predicted Result: NOT WINNER</div>',
+                unsafe_allow_html=True
+            )
+
+# ------------------------------
+# FOOTER
+# ------------------------------
+
+st.markdown("---")
+
+st.markdown(
+    """
+    <center>
+    <h4>Developed using Streamlit, Machine Learning & XGBoost</h4>
+    </center>
+    """,
+    unsafe_allow_html=True
+)
