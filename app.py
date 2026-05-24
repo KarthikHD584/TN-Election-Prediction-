@@ -7,6 +7,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import joblib
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
@@ -21,90 +22,69 @@ st.set_page_config(
 )
 
 # ---------------- CUSTOM CSS ----------------
-
 st.markdown("""
 <style>
 
-/* Main Background */
-
 .stApp {
-    background-image:
-    linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
-    url("https://images.unsplash.com/photo-1541872705-1f73c6400ec9?q=80&w=2070");
-
+    background-image: linear-gradient(
+    rgba(0,0,0,0.75),
+    rgba(0,0,0,0.75)),
+    url('https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=2070');
+    
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
 }
 
-/* Sidebar */
-
-section[data-testid="stSidebar"] {
-    background-color: rgba(15,15,15,0.95);
-}
-
-/* Title */
-
+/* Main Title */
 .main-title {
     text-align: center;
-    color: white;
-    font-size: 48px;
-    font-weight: 700;
-    margin-bottom: 5px;
+    font-size: 50px;
+    font-weight: bold;
+    color: #FFD700;
+    padding: 10px;
 }
 
-.sub-title {
-    text-align: center;
-    color: #dcdcdc;
-    font-size: 18px;
-    margin-bottom: 30px;
-}
-
-/* Cards */
-
+/* Card Style */
 .card {
-    background: rgba(255,255,255,0.08);
+    background-color: rgba(255,255,255,0.12);
     padding: 25px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 18px;
+    box-shadow: 0px 0px 20px rgba(255,255,255,0.2);
+    backdrop-filter: blur(6px);
 }
 
-/* Metrics */
-
-[data-testid="metric-container"] {
-    background-color: rgba(255,255,255,0.06);
-    border-radius: 12px;
-    padding: 15px;
-    border: 1px solid rgba(255,255,255,0.08);
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background: rgba(0,0,0,0.85);
 }
 
 /* Text */
-
-h1,h2,h3,h4,h5,p,label,span {
+h1,h2,h3,h4,p,label {
     color: white !important;
 }
 
-/* Buttons */
-
+/* Button */
 .stButton>button {
-    background-color: #b22222;
+    background: linear-gradient(90deg,#ff512f,#dd2476);
     color: white;
-    border-radius: 8px;
+    border-radius: 12px;
     border: none;
-    padding: 10px 24px;
-    font-size: 16px;
-    font-weight: 600;
+    padding: 12px 25px;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .stButton>button:hover {
-    background-color: #8b0000;
+    background: linear-gradient(90deg,#11998e,#38ef7d);
     color: white;
 }
 
-/* Table */
-
-[data-testid="stDataFrame"] {
-    border-radius: 10px;
+/* Metric */
+[data-testid="metric-container"] {
+    background-color: rgba(255,255,255,0.12);
+    border-radius: 15px;
+    padding: 15px;
 }
 
 </style>
@@ -114,11 +94,6 @@ h1,h2,h3,h4,h5,p,label,span {
 
 st.markdown(
     "<div class='main-title'>Tamil Nadu Election Prediction</div>",
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    "<div class='sub-title'>Machine Learning Based Election Analytics Dashboard</div>",
     unsafe_allow_html=True
 )
 
