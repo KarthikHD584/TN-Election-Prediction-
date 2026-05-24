@@ -1,5 +1,5 @@
 # ================================
-# TAMIL NADU ELECTION AI DASHBOARD
+# TAMIL NADU ELECTION PREDICTION
 # BEST STREAMLIT UI DESIGN
 # ================================
 
