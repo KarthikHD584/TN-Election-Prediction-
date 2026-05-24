@@ -481,18 +481,6 @@ if menu == " Home":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="glass">
-        <h2 style="text-align:center;">
-        🇮🇳 AI Election Intelligence System
-        </h2>
-
-        <p style="font-size:20px; text-align:center;">
-        Advanced Machine Learning Dashboard for Tamil Nadu Election Prediction,
-        Political Analytics, Sentiment Analysis, and Winner Forecasting.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
 
 # ==========================================
 # DATASET
@@ -737,8 +725,3 @@ elif menu == "📈 Sentiment Analysis":
 # FOOTER
 # ==========================================
 
-st.markdown("""
-<div class="footer">
-🇮🇳 Tamil Nadu Election AI Dashboard • Built with Streamlit & Machine Learning
-</div>
-""", unsafe_allow_html=True)
