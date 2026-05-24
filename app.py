@@ -401,9 +401,9 @@ elif menu == "🏆 Constituency Winner":
 # PREDICTION
 # =========================================================
 
-elif menu == "🤖 Election Prediction":
+elif menu == "Election Prediction":
 
-    st.subheader("🤖 AI Election Prediction")
+    st.subheader(" Election Prediction")
 
     col1, col2 = st.columns(2)
 
