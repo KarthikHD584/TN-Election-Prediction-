@@ -1,5 +1,5 @@
 # =========================================================
-# PREMIUM TAMIL NADU ELECTION AI DASHBOARD
+# PREMIUM TAMIL NADU ELECTION PREDICTION
 # ATTRACTIVE STREAMLIT UI WITH WINNING CELEBRATION
 # =========================================================
 
@@ -178,7 +178,7 @@ h1,h2,h3,h4,h5,p,label,span {
 
 st.markdown("""
 <div class='main-title'>
-🗳️ Tamil Nadu Election AI Dashboard
+🗳️ Tamil Nadu Election Prediction
 </div>
 """, unsafe_allow_html=True)
 
@@ -265,11 +265,11 @@ st.sidebar.title("Election Navigation")
 menu = st.sidebar.radio(
     "Choose Menu",
     [
-        "🏠 Home",
-        "📊 Analytics",
-        "🏆 Constituency Winner",
-        "🤖 Election Prediction",
-        "📈 Vote Share"
+        " Home",
+        " Analytics",
+        " Constituency Winner",
+        " Election Prediction",
+        " Vote Share"
     ]
 )
 
