@@ -1,98 +1,208 @@
-# app.py
+# =========================================================
+# PREMIUM TAMIL NADU ELECTION AI DASHBOARD
+# ATTRACTIVE STREAMLIT UI WITH WINNING CELEBRATION
+# =========================================================
 
 import streamlit as st
 import pandas as pd
 import numpy as np
-import joblib
 import plotly.express as px
 import plotly.graph_objects as go
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
-from sklearn.metrics import accuracy_score
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-# ---------------- PAGE CONFIG ----------------
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
+
+# =========================================================
+# PAGE CONFIG
+# =========================================================
 
 st.set_page_config(
     page_title="Tamil Nadu Election Prediction",
     page_icon="🗳️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# ---------------- CUSTOM CSS ----------------
+# =========================================================
+# CUSTOM CSS
+# =========================================================
 
 st.markdown("""
 <style>
 
-.main {
-    background: linear-gradient(to right, #fff5f5, #f0f8ff);
-}
+/* MAIN APP BACKGROUND */
 
 .stApp {
-    background-image: url('https://images.unsplash.com/photo-1529101091764-c3526daf38fe');
+    background-image:
+    linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.82)),
+    url("https://images.unsplash.com/photo-1541872705-1f73c6400ec9?q=80&w=2070");
+
     background-size: cover;
+    background-position: center;
     background-attachment: fixed;
 }
 
-.title-style {
-    font-size:50px;
-    font-weight:bold;
-    color:white;
-    text-align:center;
-    background: rgba(0,0,0,0.6);
-    padding:20px;
-    border-radius:15px;
+/* REMOVE STREAMLIT HEADER */
+
+header {
+    visibility: hidden;
 }
 
-.card {
-    background-color: rgba(255,255,255,0.9);
-    padding:20px;
-    border-radius:15px;
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+/* SIDEBAR */
+
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg,#000000,#1c1c1c);
+    border-right: 2px solid rgba(255,255,255,0.1);
 }
 
-.metric-box {
-    background: linear-gradient(to right, #ff512f, #dd2476);
-    padding:20px;
-    border-radius:15px;
-    text-align:center;
-    color:white;
-    font-size:22px;
-    font-weight:bold;
+/* MAIN TITLE */
+
+.main-title {
+    text-align: center;
+    font-size: 65px;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 2px 2px 15px rgba(255,215,0,0.8);
+    margin-top: -30px;
 }
 
-.sidebar .sidebar-content {
-    background: #111827;
+/* SUB TITLE */
+
+.sub-title {
+    text-align: center;
+    color: white;
+    font-size: 24px;
+    margin-bottom: 35px;
+}
+
+/* GLASS CARDS */
+
+.glass {
+    background: rgba(255,255,255,0.10);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0px 0px 25px rgba(255,255,255,0.15);
+}
+
+/* METRIC BOX */
+
+[data-testid="metric-container"] {
+    background: rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0px 0px 15px rgba(255,255,255,0.08);
+}
+
+/* TEXT COLORS */
+
+h1,h2,h3,h4,h5,p,label,span {
+    color: white !important;
+}
+
+/* BUTTON DESIGN */
+
+.stButton>button {
+
+    background: linear-gradient(
+    90deg,
+    #ff512f,
+    #dd2476
+    );
+
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 14px;
+    border: none;
+    padding: 14px 30px;
+    width: 100%;
+    transition: 0.4s;
+}
+
+.stButton>button:hover {
+
+    background: linear-gradient(
+    90deg,
+    #11998e,
+    #38ef7d
+    );
+
+    transform: scale(1.03);
+}
+
+/* INPUTS */
+
+.stTextInput input,
+.stNumberInput input {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
+
+/* DATAFRAME */
+
+[data-testid="stDataFrame"] {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* WINNER TEXT */
+
+.winner-box {
+    text-align: center;
+    font-size: 42px;
+    font-weight: bold;
+    color: #00ff88;
+    text-shadow: 0px 0px 15px #00ff88;
+}
+
+/* LOSER TEXT */
+
+.loser-box {
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    color: #ff4b4b;
+    text-shadow: 0px 0px 15px #ff4b4b;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- TITLE ----------------
+# =========================================================
+# TITLE
+# =========================================================
 
-st.markdown("""
-<div class="title-style">
-Tamil Nadu Election Prediction System
-</div>
-""", unsafe_allow_html=True)
+# =========================================================
+# LOAD DATA
+# =========================================================
 
-st.write("")
+@st.cache_data
+def load_data():
+    return pd.read_csv("eci_results_tamilnadu_2026.csv")
 
-# ---------------- LOAD DATA ----------------
-
-df = pd.read_csv("eci_results_tamilnadu_2026.csv")
+df = load_data()
 
 df = df.dropna()
 
-# ---------------- CREATE WINNER COLUMN ----------------
+# =========================================================
+# CREATE WINNER COLUMN
+# =========================================================
 
 max_votes = df.groupby('Constituency')['Total Votes'].transform('max')
 
-df['Winner'] = np.where(df['Total Votes'] == max_votes, 1, 0)
+df['Winner'] = np.where(
+    df['Total Votes'] == max_votes,
+    1,
+    0
+)
 
-# ---------------- ENCODING ----------------
+# =========================================================
+# ENCODING
+# =========================================================
 
 party_encoder = LabelEncoder()
 df['Party_Encoded'] = party_encoder.fit_transform(df['Party'])
@@ -100,7 +210,9 @@ df['Party_Encoded'] = party_encoder.fit_transform(df['Party'])
 const_encoder = LabelEncoder()
 df['Constituency_Encoded'] = const_encoder.fit_transform(df['Constituency'])
 
-# ---------------- FEATURES ----------------
+# =========================================================
+# MODEL
+# =========================================================
 
 X = df[[
     'EVM Votes',
@@ -113,16 +225,12 @@ X = df[[
 
 y = df['Winner']
 
-# ---------------- SPLIT ----------------
-
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
     test_size=0.2,
     random_state=42
 )
-
-# ---------------- MODEL ----------------
 
 model = XGBClassifier(
     use_label_encoder=False,
@@ -131,239 +239,277 @@ model = XGBClassifier(
 
 model.fit(X_train, y_train)
 
-pred = model.predict(X_test)
-
-accuracy = accuracy_score(y_test, pred)
-
-# ---------------- SIDEBAR ----------------
+# =========================================================
+# SIDEBAR
+# =========================================================
 
 st.sidebar.image(
-    "https://upload.wikimedia.org/wikipedia/commons/6/6b/Election_icon.png",
-    width=150
+    "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+    width=120
 )
 
-st.sidebar.title("Election Dashboard")
+st.sidebar.title("Election Navigation")
 
 menu = st.sidebar.radio(
-    "Select Option",
+    "Choose Menu",
     [
-        "Home",
-        "Prediction",
-        "Party Analysis",
-        "Constituency Winner",
-        "Sentiment Analysis"
+        " Home",
+        " Analytics",
+        " Constituency Winner",
+        " Election Prediction",
+        " Vote Share"
     ]
 )
 
-# ---------------- HOME ----------------
+# =========================================================
+# HOME
+# =========================================================
 
-if menu == "Home":
+if menu == " Home":
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown(f"""
-        <div class="metric-box">
-        Total Candidates<br>
-        {len(df)}
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            "Total Constituencies",
+            df['Constituency'].nunique()
+        )
 
     with col2:
-        st.markdown(f"""
-        <div class="metric-box">
-        Political Parties<br>
-        {df['Party'].nunique()}
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            "Total Candidates",
+            df['Candidate'].nunique()
+        )
 
     with col3:
-        st.markdown(f"""
-        <div class="metric-box">
-        Model Accuracy<br>
-        {round(accuracy*100,2)}%
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            "Total Parties",
+            df['Party'].nunique()
+        )
 
-    st.write("")
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
+# =========================================================
+# ANALYTICS
+# =========================================================
 
-    party_votes = df.groupby('Party')['Total Votes'].sum().sort_values(ascending=False).head(10)
+elif menu == "📊 Analytics":
+
+    st.subheader("📊 Election Analytics Dashboard")
+
+    party_votes = df.groupby('Party')['Total Votes'] \
+                    .sum() \
+                    .sort_values(ascending=False) \
+                    .head(10)
 
     fig = px.bar(
         x=party_votes.index,
         y=party_votes.values,
-        title="Top 10 Parties by Votes",
-        labels={'x':'Party', 'y':'Votes'}
+        color=party_votes.values,
+        text=party_votes.values,
+        title="Top 10 Parties by Total Votes"
+    )
+
+    fig.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='white'
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
+# =========================================================
+# CONSTITUENCY WINNER
+# =========================================================
 
-# ---------------- PREDICTION ----------------
+elif menu == "🏆 Constituency Winner":
 
-elif menu == "Prediction":
-
-    st.subheader("Election Winning Prediction")
-
-    evm_votes = st.number_input("EVM Votes", 0, 500000, 70000)
-
-    postal_votes = st.number_input("Postal Votes", 0, 10000, 500)
-
-    total_votes = st.number_input("Total Votes", 0, 500000, 70500)
-
-    percent_votes = st.slider("Vote Percentage", 0.0, 100.0, 45.0)
-
-    party = st.selectbox(
-        "Select Party",
-        df['Party'].unique()
-    )
+    st.subheader("🏆 Constituency Winner Result")
 
     constituency = st.selectbox(
         "Select Constituency",
-        df['Constituency'].unique()
+        sorted(df['Constituency'].unique())
     )
 
-    if st.button("Predict Result"):
+    const_data = df[
+        df['Constituency'] == constituency
+    ]
 
-        party_encoded = party_encoder.transform([party])[0]
+    winner = const_data.loc[
+        const_data['Total Votes'].idxmax()
+    ]
 
-        const_encoded = const_encoder.transform([constituency])[0]
+    st.markdown(f"""
+    <div class='winner-box'>
+    🎉 {winner['Candidate']} WON THE ELECTION 🎉
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.balloons()
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("Party", winner['Party'])
+
+    with col2:
+        st.metric("Votes", int(winner['Total Votes']))
+
+    with col3:
+        st.metric("Vote %", winner['% Votes'])
+
+    ranked = const_data.sort_values(
+        by='Total Votes',
+        ascending=False
+    )
+
+    st.subheader("📋 Candidate Ranking")
+
+    st.dataframe(
+        ranked[['Candidate','Party','Total Votes','% Votes']]
+    )
+
+# =========================================================
+# PREDICTION
+# =========================================================
+
+elif menu == "🤖 Election Prediction":
+
+    st.subheader("🤖 AI Election Prediction")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        evm_votes = st.number_input(
+            "EVM Votes",
+            min_value=0
+        )
+
+        postal_votes = st.number_input(
+            "Postal Votes",
+            min_value=0
+        )
+
+        total_votes = st.number_input(
+            "Total Votes",
+            min_value=0
+        )
+
+    with col2:
+
+        vote_percent = st.slider(
+            "Vote Percentage",
+            0.0,
+            100.0,
+            45.0
+        )
+
+        party = st.selectbox(
+            "Select Party",
+            sorted(df['Party'].unique())
+        )
+
+        constituency = st.selectbox(
+            "Select Constituency",
+            sorted(df['Constituency'].unique())
+        )
+
+    party_encoded = party_encoder.transform([party])[0]
+
+    const_encoded = const_encoder.transform([constituency])[0]
+
+    if st.button("Predict Election Result"):
 
         sample = pd.DataFrame({
+
             'EVM Votes': [evm_votes],
             'Postal Votes': [postal_votes],
             'Total Votes': [total_votes],
-            '% Votes': [percent_votes],
+            '% Votes': [vote_percent],
             'Party_Encoded': [party_encoded],
             'Constituency_Encoded': [const_encoded]
+
         })
 
-        result = model.predict(sample)
+        prediction = model.predict(sample)
 
         probability = model.predict_proba(sample)[0][1]
 
-        st.write("")
+        if prediction[0] == 1:
 
-        if result[0] == 1:
-            st.success(f"High Winning Chance — Probability: {round(probability*100,2)}%")
             st.balloons()
 
+            st.snow()
+
+            st.markdown("""
+            <div class='winner-box'>
+            🏆 HIGH WINNING CHANCE 🏆
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.progress(float(probability))
+
+            st.success(
+                f"Winning Probability: {round(probability*100,2)}%"
+            )
+
         else:
-            st.error(f"Low Winning Chance — Probability: {round(probability*100,2)}%")
 
-# ---------------- PARTY ANALYSIS ----------------
+            st.markdown("""
+            <div class='loser-box'>
+            ❌ LOW WINNING CHANCE
+            </div>
+            """, unsafe_allow_html=True)
 
-elif menu == "Party Analysis":
+            st.progress(float(probability))
 
-    st.subheader("Party Wise Seat Analysis")
+            st.error(
+                f"Winning Probability: {round(probability*100,2)}%"
+            )
 
-    party_seats = df[df['Winner'] == 1]['Party'].value_counts()
+# =========================================================
+# VOTE SHARE
+# =========================================================
 
-    fig = px.pie(
-        names=party_seats.index,
-        values=party_seats.values,
-        title="Seat Share Distribution"
+elif menu == "📈 Vote Share":
+
+    st.subheader("📈 Party Vote Share")
+
+    seats = df[df['Winner'] == 1]['Party'].value_counts()
+
+    fig2 = px.pie(
+        names=seats.index,
+        values=seats.values,
+        hole=0.4
     )
 
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.write("")
-
-    fig2 = px.bar(
-        x=party_seats.index,
-        y=party_seats.values,
-        color=party_seats.index,
-        title="Party Wise Seats"
+    fig2.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='white'
     )
 
     st.plotly_chart(fig2, use_container_width=True)
 
-# ---------------- CONSTITUENCY WINNER ----------------
+# =========================================================
+# FOOTER
+# =========================================================
 
-elif menu == "Constituency Winner":
-
-    st.subheader("Find Constituency Winner")
-
-    constituency_name = st.selectbox(
-        "Choose Constituency",
-        sorted(df['Constituency'].unique())
-    )
-
-    const_data = df[df['Constituency'] == constituency_name]
-
-    winner = const_data.loc[const_data['Total Votes'].idxmax()]
-
-    st.markdown(f"""
-    <div class="card">
-    <h2>Winning Candidate: {winner['Candidate']}</h2>
-    <h3>Party: {winner['Party']}</h3>
-    <h3>Total Votes: {winner['Total Votes']}</h3>
-    </div>
-    """, unsafe_allow_html=True)
-
-    ranked = const_data.sort_values(by='Total Votes', ascending=False)
-
-    st.write("")
-
-    st.dataframe(
-        ranked[['Candidate', 'Party', 'Total Votes']],
-        use_container_width=True
-    )
-
-# ---------------- SENTIMENT ANALYSIS ----------------
-
-elif menu == "Sentiment Analysis":
-
-    st.subheader("Election Sentiment Analysis")
-
-    tweets = [
-        "MK Stalin is doing good work",
-        "Bad government performance",
-        "People support DMK",
-        "Corruption issue increasing",
-        "Excellent development in Tamil Nadu"
-    ]
-
-    df_tweets = pd.DataFrame(tweets, columns=['Tweet'])
-
-    analyzer = SentimentIntensityAnalyzer()
-
-    def get_sentiment(text):
-
-        score = analyzer.polarity_scores(text)
-
-        if score['compound'] >= 0.05:
-            return 'Positive'
-
-        elif score['compound'] <= -0.05:
-            return 'Negative'
-
-        else:
-            return 'Neutral'
-
-    df_tweets['Sentiment'] = df_tweets['Tweet'].apply(get_sentiment)
-
-    st.dataframe(df_tweets, use_container_width=True)
-
-    sentiment_count = df_tweets['Sentiment'].value_counts()
-
-    fig = px.bar(
-        x=sentiment_count.index,
-        y=sentiment_count.values,
-        color=sentiment_count.index,
-        title="Public Sentiment Analysis"
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-# ---------------- FOOTER ----------------
-
-st.write("")
 st.markdown("""
+<hr>
+
 <center>
-<h4>Election Prediction Analytics Dashboard</h4>
+
+<h4 style='color:white'>
+
+🗳️ Tamil Nadu Election AI Dashboard
+
+</h4>
+
+<p style='color:lightgray'>
+
+Machine Learning • Streamlit • XGBoost • Election Analytics
+
+</p>
+
 </center>
 """, unsafe_allow_html=True)
