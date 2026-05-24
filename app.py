@@ -1,7 +1,7 @@
-# ================================
-# TAMIL NADU ELECTION AI DASHBOARD
-# BEST STREAMLIT UI DESIGN
-# ================================
+# ==========================================
+# 🗳️ TAMIL NADU ELECTION PREDICTION
+# ULTRA PREMIUM 3D STREAMLIT UI
+# ==========================================
 
 import streamlit as st
 import pandas as pd
@@ -9,139 +9,380 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import joblib
-
+from xgboost import XGBClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
 
-# ---------------- PAGE CONFIG ----------------
+# ==========================================
+# PAGE CONFIG
+# ==========================================
 
 st.set_page_config(
     page_title="Tamil Nadu Election prediction",
     page_icon="🗳️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# ---------------- CUSTOM CSS ----------------
+# ==========================================
+# CUSTOM CSS - PREMIUM 3D DESIGN
+# ==========================================
 
 st.markdown("""
 <style>
 
-/* Background */
+/* IMPORT FONT */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;900&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* MAIN BACKGROUND */
 
 .stApp {
-    background-image:
-    linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.82)),
-    url("https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=2070");
+    background:
+    linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.88)),
+    url("https://images.unsplash.com/photo-1523995462485-3d171b5c8fa9?q=80&w=2070");
 
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
 }
 
-/* Main Title */
+/* HIDE STREAMLIT MENU */
+
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+/* MAIN TITLE */
 
 .main-title {
     text-align: center;
-    font-size: 58px;
-    color: #FFD700;
-    font-weight: bold;
-    margin-bottom: 5px;
+    font-size: 70px;
+    font-weight: 900;
+
+    background: linear-gradient(
+        90deg,
+        #ffcc00,
+        #ff6600,
+        #ff0000,
+        #ffcc00
+    );
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    letter-spacing: 2px;
+
+    text-shadow:
+        0px 0px 15px rgba(255,255,255,0.3);
+
+    animation: glow 3s infinite alternate;
 }
+
+/* TITLE GLOW */
+
+@keyframes glow {
+    from {
+        filter: drop-shadow(0px 0px 10px gold);
+    }
+    to {
+        filter: drop-shadow(0px 0px 25px orange);
+    }
+}
+
+/* SUBTITLE */
 
 .sub-title {
     text-align: center;
-    color: white;
-    font-size: 22px;
-    margin-bottom: 30px;
+    font-size: 24px;
+    color: #ffffff;
+    margin-top: -10px;
+    margin-bottom: 40px;
+    font-weight: 300;
 }
 
-/* Cards */
+/* GLASS CARD */
 
-.card {
-    background: rgba(255,255,255,0.10);
-    padding: 25px;
-    border-radius: 20px;
-    backdrop-filter: blur(8px);
-    box-shadow: 0px 0px 15px rgba(255,255,255,0.2);
+.glass {
+    background: rgba(255,255,255,0.08);
+
+    border-radius: 25px;
+
+    padding: 30px;
+
+    backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255,255,255,0.15);
+
+    box-shadow:
+        0px 10px 30px rgba(0,0,0,0.5),
+        inset 0px 0px 10px rgba(255,255,255,0.1);
+
+    transition: 0.4s;
 }
 
-/* Sidebar */
+.glass:hover {
+    transform: translateY(-8px) scale(1.02);
+
+    box-shadow:
+        0px 20px 40px rgba(255,140,0,0.4);
+}
+
+/* SIDEBAR */
 
 section[data-testid="stSidebar"] {
-    background: rgba(0,0,0,0.95);
+
+    background:
+    linear-gradient(
+        180deg,
+        rgba(10,10,10,0.98),
+        rgba(25,25,25,0.98)
+    );
+
+    border-right: 2px solid rgba(255,255,255,0.08);
 }
 
-/* Metrics */
+/* SIDEBAR TITLE */
 
-[data-testid="metric-container"] {
-    background: rgba(255,255,255,0.08);
-    border-radius: 15px;
-    padding: 15px;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
-/* Text */
-
-h1,h2,h3,h4,h5,p,label,span {
-    color: white !important;
-}
-
-/* Button */
-
-.stButton>button {
-    background: linear-gradient(90deg,#ff512f,#dd2476);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 12px 28px;
-    font-size: 18px;
+.sidebar-title {
+    color: gold;
+    font-size: 28px;
+    text-align: center;
     font-weight: bold;
 }
 
-.stButton>button:hover {
-    background: linear-gradient(90deg,#11998e,#38ef7d);
+/* METRIC CARDS */
+
+[data-testid="metric-container"] {
+
+    background:
+    linear-gradient(
+        135deg,
+        rgba(255,255,255,0.12),
+        rgba(255,255,255,0.05)
+    );
+
+    border-radius: 20px;
+
+    padding: 25px;
+
+    border: 1px solid rgba(255,255,255,0.12);
+
+    box-shadow:
+        0px 10px 20px rgba(0,0,0,0.3);
+
+    transition: 0.3s;
+}
+
+[data-testid="metric-container"]:hover {
+
+    transform: scale(1.05);
+
+    border: 1px solid gold;
+
+    box-shadow:
+        0px 0px 20px rgba(255,215,0,0.5);
+}
+
+/* METRIC TEXT */
+
+[data-testid="metric-container"] label {
+    color: #FFD700 !important;
+    font-size: 18px !important;
+}
+
+[data-testid="metric-container"] div {
+    color: white !important;
+}
+
+/* BUTTON */
+
+.stButton>button {
+
+    width: 100%;
+
+    background:
+    linear-gradient(
+        90deg,
+        #ff512f,
+        #dd2476
+    );
+
     color: white;
+
+    border: none;
+
+    border-radius: 15px;
+
+    padding: 14px;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    transition: 0.4s;
+
+    box-shadow:
+        0px 8px 20px rgba(255,0,128,0.4);
 }
 
-/* Table */
+.stButton>button:hover {
 
-[data-testid="stDataFrame"] {
-    background: rgba(255,255,255,0.05);
+    transform: scale(1.03);
+
+    background:
+    linear-gradient(
+        90deg,
+        #00c6ff,
+        #0072ff
+    );
+
+    box-shadow:
+        0px 10px 25px rgba(0,114,255,0.6);
 }
 
-/* Input */
+/* SELECT BOX */
+
+.stSelectbox div[data-baseweb="select"] {
+
+    background-color: rgba(255,255,255,0.1);
+
+    border-radius: 12px;
+}
+
+/* NUMBER INPUT */
 
 .stNumberInput input {
+
     background-color: rgba(255,255,255,0.1);
+
     color: white;
+
+    border-radius: 12px;
+}
+
+/* SLIDER */
+
+.stSlider {
+
+    color: gold;
+}
+
+/* TABLE */
+
+[data-testid="stDataFrame"] {
+
+    background: rgba(255,255,255,0.05);
+
+    border-radius: 15px;
+
+    padding: 10px;
+}
+
+/* HEADINGS */
+
+h1, h2, h3, h4, h5, h6 {
+
+    color: #FFD700 !important;
+
+    font-weight: 700;
+}
+
+/* TEXT */
+
+p, label, span, div {
+
+    color: white;
+}
+
+/* WINNER CELEBRATION */
+
+.winner-box {
+
+    text-align: center;
+
+    background:
+    linear-gradient(
+        135deg,
+        rgba(255,215,0,0.15),
+        rgba(255,140,0,0.18)
+    );
+
+    padding: 35px;
+
+    border-radius: 30px;
+
+    border: 2px solid gold;
+
+    animation: pulse 2s infinite;
+
+    box-shadow:
+        0px 0px 30px rgba(255,215,0,0.4);
+}
+
+/* PULSE EFFECT */
+
+@keyframes pulse {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* FOOTER */
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    color: silver;
+    font-size: 15px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- TITLE ----------------
+# ==========================================
+# TITLE
+# ==========================================
 
-st.markdown(
-    "<div class='main-title'>🗳️ Tamil Nadu Election prediction</div>",
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div class="main-title">
+🗳️ Tamil Nadu Election AI Dashboard
+</div>
+""", unsafe_allow_html=True)
 
-# ---------------- LOAD DATA ----------------
+st.markdown("""
+<div class="sub-title">
+Real-Time AI Prediction • 3D Celebration UI • Political Analytics
+</div>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# LOAD DATA
+# ==========================================
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("eci_results_tamilnadu_2026.csv")
-    return df
+    return pd.read_csv("eci_results_tamilnadu_2026.csv")
 
 df = load_data()
 
-# ---------------- CLEAN DATA ----------------
-
 df = df.dropna()
 
-# Winner Column
+# ==========================================
+# WINNER COLUMN
+# ==========================================
 
 max_votes = df.groupby('Constituency')['Total Votes'].transform('max')
 
@@ -151,7 +392,9 @@ df['Winner'] = np.where(
     0
 )
 
-# Encoding
+# ==========================================
+# ENCODING
+# ==========================================
 
 party_encoder = LabelEncoder()
 df['Party_Encoded'] = party_encoder.fit_transform(df['Party'])
@@ -159,7 +402,9 @@ df['Party_Encoded'] = party_encoder.fit_transform(df['Party'])
 const_encoder = LabelEncoder()
 df['Constituency_Encoded'] = const_encoder.fit_transform(df['Constituency'])
 
-# ---------------- FEATURES ----------------
+# ==========================================
+# FEATURES
+# ==========================================
 
 X = df[[
     'EVM Votes',
@@ -172,7 +417,9 @@ X = df[[
 
 y = df['Winner']
 
-# ---------------- TRAIN MODEL ----------------
+# ==========================================
+# TRAIN MODEL
+# ==========================================
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -190,14 +437,20 @@ model.fit(X_train, y_train)
 
 joblib.dump(model, "tamilnadu_model.pkl")
 
-# ---------------- SIDEBAR ----------------
+# ==========================================
+# SIDEBAR
+# ==========================================
 
-st.sidebar.title(" Navigation")
+st.sidebar.markdown("""
+<div class="sidebar-title">
+🗳️ Navigation
+</div>
+""", unsafe_allow_html=True)
 
 menu = st.sidebar.radio(
-    "Select Menu",
+    "",
     [
-        " Home",
+        "Home",
         " Dataset",
         " Analytics",
         " Constituency Winner",
@@ -206,7 +459,9 @@ menu = st.sidebar.radio(
     ]
 )
 
-# ================= HOME =================
+# ==========================================
+# HOME
+# ==========================================
 
 if menu == " Home":
 
@@ -230,23 +485,38 @@ if menu == " Home":
             df['Party'].nunique()
         )
 
+    st.markdown("<br>", unsafe_allow_html=True)
 
+    st.markdown("""
+    <div class="glass">
+        <h2 style="text-align:center;">
+        🇮🇳 AI Election Intelligence System
+        </h2>
 
-# ================= DATASET =================
+        <p style="font-size:20px; text-align:center;">
+        Advanced Machine Learning Dashboard for Tamil Nadu Election Prediction,
+        Political Analytics, Sentiment Analysis, and Winner Forecasting.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ==========================================
+# DATASET
+# ==========================================
 
 elif menu == "📄 Dataset":
 
     st.subheader("📄 Tamil Nadu Election Dataset")
 
-    st.dataframe(df)
+    st.dataframe(df, use_container_width=True)
 
-# ================= ANALYTICS =================
+# ==========================================
+# ANALYTICS
+# ==========================================
 
 elif menu == "📊 Analytics":
 
     st.subheader("📊 Election Analytics")
-
-    # Top Parties
 
     party_votes = df.groupby('Party')['Total Votes'] \
                     .sum() \
@@ -257,28 +527,43 @@ elif menu == "📊 Analytics":
         x=party_votes.index,
         y=party_votes.values,
         color=party_votes.values,
-        title="Top 10 Parties by Votes"
+        text=party_votes.values,
+        title="Top Parties by Votes"
+    )
+
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)'
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # Seat Share
+    # PIE CHART
 
     party_seats = df[df['Winner'] == 1]['Party'].value_counts()
 
     fig2 = px.pie(
         names=party_seats.index,
         values=party_seats.values,
+        hole=0.45,
         title="Seat Share"
+    )
+
+    fig2.update_layout(
+        template="plotly_dark",
+        paper_bgcolor='rgba(0,0,0,0)'
     )
 
     st.plotly_chart(fig2, use_container_width=True)
 
-# ================= WINNER =================
+# ==========================================
+# WINNER
+# ==========================================
 
 elif menu == "🏆 Constituency Winner":
 
-    st.subheader("🏆 Find Constituency Winner")
+    st.subheader("🏆 Constituency Winner")
 
     constituency = st.selectbox(
         "Select Constituency",
@@ -291,73 +576,89 @@ elif menu == "🏆 Constituency Winner":
         const_data['Total Votes'].idxmax()
     ]
 
-    st.success(f"🏆 Winner: {winner['Candidate']}")
+    st.markdown(f"""
+    <div class="winner-box">
 
-    col1, col2, col3 = st.columns(3)
+        <h1>🎉 WINNER 🎉</h1>
 
-    with col1:
-        st.metric("Party", winner['Party'])
+        <h2>{winner['Candidate']}</h2>
 
-    with col2:
-        st.metric("Votes", int(winner['Total Votes']))
+        <h3>{winner['Party']}</h3>
 
-    with col3:
-        st.metric("Vote %", winner['% Votes'])
+        <h2>🏆 {int(winner['Total Votes'])} Votes</h2>
 
-    st.subheader("📋 Candidate Ranking")
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.balloons()
+
+    st.markdown("<br>", unsafe_allow_html=True)
 
     ranked = const_data.sort_values(
         by='Total Votes',
         ascending=False
     )
 
+    st.subheader("📋 Candidate Ranking")
+
     st.dataframe(
-        ranked[['Candidate','Party','Total Votes','% Votes']]
+        ranked[
+            ['Candidate', 'Party', 'Total Votes', '% Votes']
+        ],
+        use_container_width=True
     )
 
-# ================= PREDICTION =================
+# ==========================================
+# PREDICTION
+# ==========================================
 
-elif menu == " Election Prediction":
+elif menu == "🔮 Election Prediction":
 
-    st.subheader(" Predict Future Election Winner")
+    st.subheader("🔮 Predict Future Election Winner")
 
-    evm_votes = st.number_input(
-        "Enter EVM Votes",
-        min_value=0
-    )
+    col1, col2 = st.columns(2)
 
-    postal_votes = st.number_input(
-        "Enter Postal Votes",
-        min_value=0
-    )
+    with col1:
 
-    total_votes = st.number_input(
-        "Enter Total Votes",
-        min_value=0
-    )
+        evm_votes = st.number_input(
+            "EVM Votes",
+            min_value=0
+        )
 
-    vote_percent = st.slider(
-        "Vote Percentage",
-        0.0,
-        100.0,
-        45.0
-    )
+        postal_votes = st.number_input(
+            "Postal Votes",
+            min_value=0
+        )
 
-    party = st.selectbox(
-        "Select Party",
-        sorted(df['Party'].unique())
-    )
+        total_votes = st.number_input(
+            "Total Votes",
+            min_value=0
+        )
 
-    constituency = st.selectbox(
-        "Select Constituency",
-        sorted(df['Constituency'].unique())
-    )
+    with col2:
+
+        vote_percent = st.slider(
+            "Vote Percentage",
+            0.0,
+            100.0,
+            45.0
+        )
+
+        party = st.selectbox(
+            "Select Party",
+            sorted(df['Party'].unique())
+        )
+
+        constituency = st.selectbox(
+            "Select Constituency",
+            sorted(df['Constituency'].unique())
+        )
 
     party_encoded = party_encoder.transform([party])[0]
 
     const_encoded = const_encoder.transform([constituency])[0]
 
-    if st.button("Predict Winner"):
+    if st.button("🚀 Predict Winner"):
 
         sample = pd.DataFrame({
 
@@ -378,13 +679,25 @@ elif menu == " Election Prediction":
 
             st.balloons()
 
-            st.success("🏆 Predicted Result: WINNER")
+            st.snow()
+
+            st.markdown(f"""
+            <div class="winner-box">
+
+                <h1>🎊 PARTY CELEBRATION 🎊</h1>
+
+                <h1>🏆 WINNER PREDICTED</h1>
+
+                <h2>{party}</h2>
+
+                <h2>🔥 Winning Probability</h2>
+
+                <h1>{round(probability*100,2)}%</h1>
+
+            </div>
+            """, unsafe_allow_html=True)
 
             st.progress(float(probability))
-
-            st.write(
-                f"Winning Probability: {round(probability*100,2)}%"
-            )
 
         else:
 
@@ -396,32 +709,17 @@ elif menu == " Election Prediction":
                 f"Winning Probability: {round(probability*100,2)}%"
             )
 
-# ================= SENTIMENT =================
+# ==========================================
+# SENTIMENT ANALYSIS
+# ==========================================
 
 elif menu == "📈 Sentiment Analysis":
 
     st.subheader("📈 Political Sentiment Analysis")
 
-    tweets = [
-        "MK Stalin is doing good work",
-        "Bad government performance",
-        "People support DMK",
-        "Corruption issue increasing",
-        "Excellent development in Tamil Nadu"
-    ]
-
-    tweet_df = pd.DataFrame(
-        tweets,
-        columns=['Tweet']
-    )
-
-    positive = 3
-    negative = 1
-    neutral = 1
-
     sentiment_data = pd.DataFrame({
-        'Sentiment': ['Positive','Negative','Neutral'],
-        'Count': [positive, negative, neutral]
+        'Sentiment': ['Positive', 'Negative', 'Neutral'],
+        'Count': [65, 20, 15]
     })
 
     fig = px.bar(
@@ -429,12 +727,24 @@ elif menu == "📈 Sentiment Analysis":
         x='Sentiment',
         y='Count',
         color='Sentiment',
+        text='Count',
         title='Public Sentiment Analysis'
+    )
+
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)'
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    st.dataframe(tweet_df)
+# ==========================================
+# FOOTER
+# ==========================================
 
-# ---------------- FOOTER ----------------
-
+st.markdown("""
+<div class="footer">
+🇮🇳 Tamil Nadu Election AI Dashboard • Built with Streamlit & Machine Learning
+</div>
+""", unsafe_allow_html=True)
