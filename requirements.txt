@@ -3,7 +3,11 @@ pandas
 numpy
 scikit-learn
 xgboost
-joblib
 plotly
+vaderSentiment
+joblib
 matplotlib
 seaborn
+tensorflow
+transformers
+torch
