@@ -236,15 +236,15 @@ if menu == "🏠 Home":
     st.markdown("""
     <div class='card'>
 
-    <h2>📌 About This Project</h2>
+    <h2> -About This Project</h2>
 
     This AI-powered election dashboard predicts election winners using:
 
-    ✅ XGBoost  
-    ✅ Random Forest  
-    ✅ Logistic Regression  
-    ✅ Sentiment Analysis  
-    ✅ Interactive Visualizations  
+    . XGBoost  
+    . Random Forest  
+    . Logistic Regression  
+    . Sentiment Analysis  
+    . Interactive Visualizations  
 
     Built using:
     
@@ -468,8 +468,6 @@ st.markdown("""
 <center>
 
 <h4 style='color:white'>
-
-Made with ❤️ using Streamlit | Election Prediction System
 
 </h4>
 
