@@ -356,18 +356,6 @@ p, label, span, div {
 # TITLE
 # ==========================================
 
-st.markdown("""
-<div class="main-title">
-🗳️ Tamil Nadu Election AI Dashboard
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="sub-title">
-Real-Time AI Prediction • 3D Celebration UI • Political Analytics
-</div>
-""", unsafe_allow_html=True)
-
 # ==========================================
 # LOAD DATA
 # ==========================================
