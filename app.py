@@ -1,6 +1,5 @@
 # ==========================================
-# 🗳️ TAMIL NADU ELECTION AI DASHBOARD
-# ULTRA PREMIUM 3D STREAMLIT UI
+# 🗳️ TAMIL NADU ELECTION PREDICTION
 # ==========================================
 
 import streamlit as st
@@ -358,15 +357,10 @@ p, label, span, div {
 
 st.markdown("""
 <div class="main-title">
-🗳️ Tamil Nadu Election AI Dashboard
+🗳️ Tamil Nadu Election Prediction
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="sub-title">
-Real-Time AI Prediction • 3D Celebration UI • Political Analytics
-</div>
-""", unsafe_allow_html=True)
 
 # ==========================================
 # LOAD DATA
@@ -450,12 +444,12 @@ st.sidebar.markdown("""
 menu = st.sidebar.radio(
     "",
     [
-        "🏠 Home",
-        "📄 Dataset",
-        "📊 Analytics",
-        "🏆 Constituency Winner",
-        "🔮 Election Prediction",
-        "📈 Sentiment Analysis"
+        " Home",
+        " Dataset",
+        " Analytics",
+        " Constituency Winner",
+        " Election Prediction",
+        " Sentiment Analysis"
     ]
 )
 
@@ -463,7 +457,7 @@ menu = st.sidebar.radio(
 # HOME
 # ==========================================
 
-if menu == "🏠 Home":
+if menu == " Home":
 
     col1, col2, col3 = st.columns(3)
 
@@ -504,9 +498,9 @@ if menu == "🏠 Home":
 # DATASET
 # ==========================================
 
-elif menu == "📄 Dataset":
+elif menu == " Dataset":
 
-    st.subheader("📄 Tamil Nadu Election Dataset")
+    st.subheader(" Tamil Nadu Election Dataset")
 
     st.dataframe(df, use_container_width=True)
 
@@ -514,9 +508,9 @@ elif menu == "📄 Dataset":
 # ANALYTICS
 # ==========================================
 
-elif menu == "📊 Analytics":
+elif menu == " Analytics":
 
-    st.subheader("📊 Election Analytics")
+    st.subheader(" Election Analytics")
 
     party_votes = df.groupby('Party')['Total Votes'] \
                     .sum() \
@@ -561,7 +555,7 @@ elif menu == "📊 Analytics":
 # WINNER
 # ==========================================
 
-elif menu == "🏆 Constituency Winner":
+elif menu == " Constituency Winner":
 
     st.subheader("🏆 Constituency Winner")
 
