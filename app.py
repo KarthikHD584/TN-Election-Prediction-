@@ -29,9 +29,8 @@ st.markdown("""
 
 .stApp {
     background-image:
-    linear-gradient(rgba(0,0,0,0.78),
-    rgba(0,0,0,0.78)),
-    url("https://images.unsplash.com/photo-1541872705-1f73c6400ec9?q=80&w=1974");
+     linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.82)),
+    url("https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=2070");
 
     background-size: cover;
     background-position: center;
