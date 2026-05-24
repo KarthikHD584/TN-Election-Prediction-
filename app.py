@@ -1,5 +1,5 @@
 # ================================
-# TAMIL NADU ELECTION PREDICTION
+# TAMIL NADU ELECTION AI DASHBOARD
 # BEST STREAMLIT UI DESIGN
 # ================================
 
@@ -18,7 +18,7 @@ from xgboost import XGBClassifier
 # ---------------- PAGE CONFIG ----------------
 
 st.set_page_config(
-    page_title="TAMIL NADU ELECTION PREDICTION",
+    page_title="Tamil Nadu Election AI",
     page_icon="🗳️",
     layout="wide"
 )
@@ -124,10 +124,14 @@ h1,h2,h3,h4,h5,p,label,span {
 # ---------------- TITLE ----------------
 
 st.markdown(
-    "<div class='main-title'>TAMIL NADU ELECTION PREDICTION</div>",
+    "<div class='main-title'>🗳️ Tamil Nadu Election AI Dashboard</div>",
     unsafe_allow_html=True
 )
 
+st.markdown(
+    "<div class='sub-title'>Machine Learning Based Election Prediction System</div>",
+    unsafe_allow_html=True
+)
 
 # ---------------- LOAD DATA ----------------
 
@@ -193,23 +197,23 @@ joblib.dump(model, "tamilnadu_model.pkl")
 
 # ---------------- SIDEBAR ----------------
 
-st.sidebar.title("Navigation")
+st.sidebar.title("⚡ Navigation")
 
 menu = st.sidebar.radio(
     "Select Menu",
     [
-        "Home",
-        "Dataset",
-        "Analytics",
-        "Constituency Winner",
-        "Election Prediction",
-        "Sentiment Analysis"
+        "🏠 Home",
+        "📄 Dataset",
+        "📊 Analytics",
+        "🏆 Constituency Winner",
+        "🤖 Election Prediction",
+        "📈 Sentiment Analysis"
     ]
 )
 
 # ================= HOME =================
 
-if menu == "Home":
+if menu == "🏠 Home":
 
     col1, col2, col3 = st.columns(3)
 
@@ -236,6 +240,25 @@ if menu == "Home":
     st.markdown("""
     <div class='card'>
 
+    <h2>📌 About This Project</h2>
+
+    This AI-powered election dashboard predicts election winners using:
+
+    ✅ XGBoost  
+    ✅ Random Forest  
+    ✅ Logistic Regression  
+    ✅ Sentiment Analysis  
+    ✅ Interactive Visualizations  
+
+    Built using:
+    
+    🔹 Python  
+    🔹 Machine Learning  
+    🔹 Streamlit  
+    🔹 Plotly  
+
+    </div>
+    """, unsafe_allow_html=True)
 
 # ================= DATASET =================
 
@@ -393,7 +416,7 @@ elif menu == "🤖 Election Prediction":
 
         else:
 
-            st.error(" Predicted Result: NOT WINNER")
+            st.error("❌ Predicted Result: NOT WINNER")
 
             st.progress(float(probability))
 
@@ -450,6 +473,7 @@ st.markdown("""
 
 <h4 style='color:white'>
 
+Made with ❤️ using Streamlit | Election Prediction System
 
 </h4>
 
