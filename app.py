@@ -28,8 +28,8 @@ st.markdown("""
 /* Main Background */
 
 .stApp {
-    background-image:
-     linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.82)),
+   background-image:
+    linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.82)),
     url("https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=2070");
 
     background-size: cover;
@@ -112,10 +112,9 @@ h1,h2,h3,h4,h5,h6,p,label,span {
 
 st.markdown("""
 <div class="main-title">
-TAMIL NADU ELECTION PREDICTION
+Tamil Nadu Election Prediction Dashboard
 </div>
 """, unsafe_allow_html=True)
-
 
 # ---------------- LOAD DATA ----------------
 
