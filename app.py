@@ -1,127 +1,156 @@
-# ==============================
-# STREAMLIT APP - Election Winner Prediction
-# ==============================
+# =========================================================
+# TAMIL NADU ELECTION PREDICTION - ADVANCED STREAMLIT APP
+# =========================================================
 
-# Save this file as:
-# app.py
+# SAVE AS: app.py
 
 import streamlit as st
 import pandas as pd
 import numpy as np
-import joblib
-import base64
+from joblib import load
+import plotly.express as px
+import plotly.graph_objects as go
 
-# ------------------------------
+# =========================================================
 # PAGE CONFIG
-# ------------------------------
+# =========================================================
 
 st.set_page_config(
-    page_title="Tamil Nadu Election Prediction",
+    page_title="TN Election Prediction",
     page_icon="🗳️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# ------------------------------
-# CUSTOM BACKGROUND + DESIGN
-# ------------------------------
+# =========================================================
+# CUSTOM CSS
+# =========================================================
 
-page_bg = """
+st.markdown("""
 <style>
 
-[data-testid="stAppViewContainer"]{
-background: linear-gradient(to right, #141e30, #243b55);
-color: white;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Poppins', sans-serif;
 }
 
-[data-testid="stHeader"]{
-background: rgba(0,0,0,0);
+/* Main Background */
+.stApp {
+    background: linear-gradient(
+        135deg,
+        #0f2027,
+        #203a43,
+        #2c5364
+    );
+    color: white;
 }
 
-.big-title{
-font-size:55px;
-font-weight:bold;
-text-align:center;
-color:white;
-padding-top:20px;
+/* Header */
+.main-title {
+    font-size: 55px;
+    font-weight: 700;
+    text-align: center;
+    color: #ffffff;
+    margin-top: 10px;
 }
 
-.sub-title{
-font-size:22px;
-text-align:center;
-color:#d1d1d1;
-margin-bottom:40px;
+.subtitle {
+    font-size: 20px;
+    text-align: center;
+    color: #d3d3d3;
+    margin-bottom: 40px;
 }
 
-.result-win{
-background-color:#00c853;
-padding:20px;
-border-radius:15px;
-text-align:center;
-font-size:30px;
-font-weight:bold;
-color:white;
+/* Cards */
+.card {
+    background: rgba(255,255,255,0.08);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
 }
 
-.result-lose{
-background-color:#d50000;
-padding:20px;
-border-radius:15px;
-text-align:center;
-font-size:30px;
-font-weight:bold;
-color:white;
+/* Prediction Winner */
+.winner {
+    background: linear-gradient(to right, #11998e, #38ef7d);
+    padding: 25px;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 35px;
+    font-weight: bold;
+    color: white;
 }
 
-.stButton>button{
-width:100%;
-background-color:#ff9800;
-color:white;
-font-size:20px;
-font-weight:bold;
-border-radius:10px;
-height:3em;
-border:none;
+/* Prediction Loser */
+.loser {
+    background: linear-gradient(to right, #cb2d3e, #ef473a);
+    padding: 25px;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 35px;
+    font-weight: bold;
+    color: white;
 }
 
-.stButton>button:hover{
-background-color:#ff5722;
-color:white;
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: #111827;
 }
 
-.css-1d391kg{
-background-color:#111111;
+/* Button */
+.stButton>button {
+    width: 100%;
+    background: linear-gradient(to right, #ff512f, #dd2476);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 12px;
+    height: 3.2em;
+    border: none;
+}
+
+.stButton>button:hover {
+    background: linear-gradient(to right, #24c6dc, #514a9d);
+    color: white;
+}
+
+/* Metrics */
+.metric-box {
+    background: rgba(255,255,255,0.07);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
 }
 
 </style>
-"""
+""", unsafe_allow_html=True)
 
-st.markdown(page_bg, unsafe_allow_html=True)
-
-# ------------------------------
+# =========================================================
 # LOAD MODEL
-# ------------------------------
+# =========================================================
 
-model = joblib.load("tamilnadu_election_model.pkl")
+model = load("tamilnadu_election_model.pkl")
 
-# ------------------------------
-# TITLE
-# ------------------------------
+# =========================================================
+# HEADER
+# =========================================================
 
 st.markdown(
-    '<p class="big-title">🗳 Tamil Nadu Election Winner Prediction</p>',
+    '<div class="main-title">🗳️ Tamil Nadu Election Prediction</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
-    '<p class="sub-title">Machine Learning Based Election Prediction System</p>',
+    '<div class="subtitle">Machine Learning Based Election Winner Prediction Dashboard</div>',
     unsafe_allow_html=True
 )
 
-# ------------------------------
-# SIDEBAR
-# ------------------------------
+# =========================================================
+# SIDEBAR INPUTS
+# =========================================================
 
-st.sidebar.title("📌 Input Election Details")
+st.sidebar.title("📌 Candidate Details")
 
 evm_votes = st.sidebar.number_input(
     "EVM Votes",
@@ -142,57 +171,99 @@ total_votes = st.sidebar.number_input(
 )
 
 vote_percent = st.sidebar.slider(
-    "% Votes",
+    "Vote Percentage",
     0.0,
     100.0,
     40.2
 )
 
 party_encoded = st.sidebar.number_input(
-    "Party Encoded Value",
+    "Party Encoded",
     min_value=0,
     value=86
 )
 
 constituency_encoded = st.sidebar.number_input(
-    "Constituency Encoded Value",
+    "Constituency Encoded",
     min_value=0,
     value=3
 )
 
-# ------------------------------
-# MAIN CONTENT
-# ------------------------------
+# =========================================================
+# INPUT DATAFRAME
+# =========================================================
 
-col1, col2 = st.columns(2)
+input_df = pd.DataFrame({
+    'EVM Votes': [evm_votes],
+    'Postal Votes': [postal_votes],
+    'Total Votes': [total_votes],
+    '% Votes': [vote_percent],
+    'Party_Encoded': [party_encoded],
+    'Constituency_Encoded': [constituency_encoded]
+})
+
+# =========================================================
+# DASHBOARD LAYOUT
+# =========================================================
+
+col1, col2 = st.columns([1,1])
+
+# =========================================================
+# LEFT SIDE
+# =========================================================
 
 with col1:
 
-    st.subheader("📊 Candidate Input Data")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
 
-    input_df = pd.DataFrame({
-        'EVM Votes': [evm_votes],
-        'Postal Votes': [postal_votes],
-        'Total Votes': [total_votes],
-        '% Votes': [vote_percent],
-        'Party_Encoded': [party_encoded],
-        'Constituency_Encoded': [constituency_encoded]
-    })
+    st.subheader("📊 Candidate Data")
 
-    st.dataframe(input_df, use_container_width=True)
+    st.dataframe(
+        input_df,
+        use_container_width=True
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("")
+
+    # Gauge Chart
+
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = vote_percent,
+        title = {'text': "Vote Percentage"},
+        gauge = {
+            'axis': {'range': [0, 100]},
+            'bar': {'color': "lime"},
+            'steps': [
+                {'range': [0, 35], 'color': "red"},
+                {'range': [35, 60], 'color': "orange"},
+                {'range': [60, 100], 'color': "green"}
+            ]
+        }
+    ))
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# =========================================================
+# RIGHT SIDE
+# =========================================================
 
 with col2:
 
-    st.subheader("🤖 ML Prediction")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
 
-    if st.button("Predict Winner"):
+    st.subheader("🤖 Prediction System")
+
+    if st.button("Predict Election Winner"):
 
         prediction = model.predict(input_df)
 
         if prediction[0] == 1:
 
             st.markdown(
-                '<div class="result-win">🏆 Predicted Result: WINNER</div>',
+                '<div class="winner">🏆 WINNER PREDICTED</div>',
                 unsafe_allow_html=True
             )
 
@@ -201,21 +272,64 @@ with col2:
         else:
 
             st.markdown(
-                '<div class="result-lose">❌ Predicted Result: NOT WINNER</div>',
+                '<div class="loser">❌ NOT A WINNER</div>',
                 unsafe_allow_html=True
             )
 
-# ------------------------------
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("")
+
+    # Pie Chart
+
+    pie_df = pd.DataFrame({
+        'Category': ['EVM Votes', 'Postal Votes'],
+        'Votes': [evm_votes, postal_votes]
+    })
+
+    pie_chart = px.pie(
+        pie_df,
+        names='Category',
+        values='Votes',
+        hole=0.5
+    )
+
+    st.plotly_chart(pie_chart, use_container_width=True)
+
+# =========================================================
+# METRICS
+# =========================================================
+
+st.markdown("## 📈 Election Metrics")
+
+m1, m2, m3 = st.columns(3)
+
+with m1:
+    st.metric(
+        label="Total Votes",
+        value=f"{total_votes:,}"
+    )
+
+with m2:
+    st.metric(
+        label="Vote %",
+        value=f"{vote_percent}%"
+    )
+
+with m3:
+    st.metric(
+        label="Postal Votes",
+        value=f"{postal_votes:,}"
+    )
+
+# =========================================================
 # FOOTER
-# ------------------------------
+# =========================================================
 
 st.markdown("---")
 
-st.markdown(
-    """
-    <center>
-    <h4>Developed using Streamlit, Machine Learning & XGBoost</h4>
-    </center>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown("""
+<center>
+<h4>Developed with ❤️ using Streamlit, XGBoost & Machine Learning</h4>
+</center>
+""", unsafe_allow_html=True)
