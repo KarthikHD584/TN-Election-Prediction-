@@ -18,7 +18,7 @@ from xgboost import XGBClassifier
 # ---------------- PAGE CONFIG ----------------
 
 st.set_page_config(
-    page_title="Tamil Nadu Election AI",
+    page_title="TAMIL NADU ELECTION PREDICTION",
     page_icon="🗳️",
     layout="wide"
 )
