@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 # ==========================================
 
 st.set_page_config(
-    page_title="Election Prediction",
+    page_title=" TAMIL NADU ELECTION PREDICTION",
     page_icon="🗳️",
     layout="wide",
     initial_sidebar_state="expanded"
