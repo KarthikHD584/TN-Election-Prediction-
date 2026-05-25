@@ -1,719 +1,362 @@
-# ==========================================
-# 🗳️ TAMIL NADU ELECTION PREDICTION
-# ==========================================
+# =========================================================
+# TAMIL NADU ELECTION WINNER PREDICTION - ADVANCED ML MODEL
+# BEST STANDARD ML PREDICTION CODE
+# =========================================================
 
-import streamlit as st
+# INSTALL REQUIRED LIBRARIES:
+# pip install pandas numpy scikit-learn xgboost lightgbm catboost matplotlib seaborn joblib
+
+# =========================================================
+# IMPORT LIBRARIES
+# =========================================================
+
 import pandas as pd
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
 import joblib
-from xgboost import XGBClassifier
-from sklearn.preprocessing import LabelEncoder
+
 from sklearn.model_selection import train_test_split
-
-# ==========================================
-# PAGE CONFIG
-# ==========================================
-
-st.set_page_config(
-    page_title=" TAMIL NADU ELECTION PREDICTION",
-    page_icon="🗳️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    classification_report,
+    roc_auc_score
 )
 
-# ==========================================
-# CUSTOM CSS - PREMIUM 3D DESIGN
-# ==========================================
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import GradientBoostingClassifier
 
-st.markdown("""
-<style>
+from xgboost import XGBClassifier
 
-/* IMPORT FONT */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;900&display=swap');
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-html, body, [class*="css"] {
-    font-family: 'Poppins', sans-serif;
-}
+# =========================================================
+# LOAD DATASET
+# =========================================================
 
-/* MAIN BACKGROUND */
+df = pd.read_csv("eci_results_tamilnadu_2026.csv")
 
-.stApp {
-    background:
-    linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.88)),
-    url("https://images.unsplash.com/photo-1523995462485-3d171b5c8fa9?q=80&w=2070");
+print("\n========== DATASET HEAD ==========\n")
+print(df.head())
 
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-}
+print("\n========== DATASET INFO ==========\n")
+print(df.info())
 
-/* HIDE STREAMLIT MENU */
+print("\n========== NULL VALUES ==========\n")
+print(df.isnull().sum())
 
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-
-/* MAIN TITLE */
-
-.main-title {
-    text-align: center;
-    font-size: 70px;
-    font-weight: 900;
-
-    background: linear-gradient(
-        90deg,
-        #ffcc00,
-        #ff6600,
-        #ff0000,
-        #ffcc00
-    );
-
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    letter-spacing: 2px;
-
-    text-shadow:
-        0px 0px 15px rgba(255,255,255,0.3);
-
-    animation: glow 3s infinite alternate;
-}
-
-/* TITLE GLOW */
-
-@keyframes glow {
-    from {
-        filter: drop-shadow(0px 0px 10px gold);
-    }
-    to {
-        filter: drop-shadow(0px 0px 25px orange);
-    }
-}
-
-/* SUBTITLE */
-
-.sub-title {
-    text-align: center;
-    font-size: 24px;
-    color: #ffffff;
-    margin-top: -10px;
-    margin-bottom: 40px;
-    font-weight: 300;
-}
-
-/* GLASS CARD */
-
-.glass {
-    background: rgba(255,255,255,0.08);
-
-    border-radius: 25px;
-
-    padding: 30px;
-
-    backdrop-filter: blur(12px);
-
-    border: 1px solid rgba(255,255,255,0.15);
-
-    box-shadow:
-        0px 10px 30px rgba(0,0,0,0.5),
-        inset 0px 0px 10px rgba(255,255,255,0.1);
-
-    transition: 0.4s;
-}
-
-.glass:hover {
-    transform: translateY(-8px) scale(1.02);
-
-    box-shadow:
-        0px 20px 40px rgba(255,140,0,0.4);
-}
-
-/* SIDEBAR */
-
-section[data-testid="stSidebar"] {
-
-    background:
-    linear-gradient(
-        180deg,
-        rgba(10,10,10,0.98),
-        rgba(25,25,25,0.98)
-    );
-
-    border-right: 2px solid rgba(255,255,255,0.08);
-}
-
-/* SIDEBAR TITLE */
-
-.sidebar-title {
-    color: gold;
-    font-size: 28px;
-    text-align: center;
-    font-weight: bold;
-}
-
-/* METRIC CARDS */
-
-[data-testid="metric-container"] {
-
-    background:
-    linear-gradient(
-        135deg,
-        rgba(255,255,255,0.12),
-        rgba(255,255,255,0.05)
-    );
-
-    border-radius: 20px;
-
-    padding: 25px;
-
-    border: 1px solid rgba(255,255,255,0.12);
-
-    box-shadow:
-        0px 10px 20px rgba(0,0,0,0.3);
-
-    transition: 0.3s;
-}
-
-[data-testid="metric-container"]:hover {
-
-    transform: scale(1.05);
-
-    border: 1px solid gold;
-
-    box-shadow:
-        0px 0px 20px rgba(255,215,0,0.5);
-}
-
-/* METRIC TEXT */
-
-[data-testid="metric-container"] label {
-    color: #FFD700 !important;
-    font-size: 18px !important;
-}
-
-[data-testid="metric-container"] div {
-    color: white !important;
-}
-
-/* BUTTON */
-
-.stButton>button {
-
-    width: 100%;
-
-    background:
-    linear-gradient(
-        90deg,
-        #ff512f,
-        #dd2476
-    );
-
-    color: white;
-
-    border: none;
-
-    border-radius: 15px;
-
-    padding: 14px;
-
-    font-size: 20px;
-
-    font-weight: bold;
-
-    transition: 0.4s;
-
-    box-shadow:
-        0px 8px 20px rgba(255,0,128,0.4);
-}
-
-.stButton>button:hover {
-
-    transform: scale(1.03);
-
-    background:
-    linear-gradient(
-        90deg,
-        #00c6ff,
-        #0072ff
-    );
-
-    box-shadow:
-        0px 10px 25px rgba(0,114,255,0.6);
-}
-
-/* SELECT BOX */
-
-.stSelectbox div[data-baseweb="select"] {
-
-    background-color: rgba(255,255,255,0.1);
-
-    border-radius: 12px;
-}
-
-/* NUMBER INPUT */
-
-.stNumberInput input {
-
-    background-color: rgba(255,255,255,0.1);
-
-    color: white;
-
-    border-radius: 12px;
-}
-
-/* SLIDER */
-
-.stSlider {
-
-    color: gold;
-}
-
-/* TABLE */
-
-[data-testid="stDataFrame"] {
-
-    background: rgba(255,255,255,0.05);
-
-    border-radius: 15px;
-
-    padding: 10px;
-}
-
-/* HEADINGS */
-
-h1, h2, h3, h4, h5, h6 {
-
-    color: #FFD700 !important;
-
-    font-weight: 700;
-}
-
-/* TEXT */
-
-p, label, span, div {
-
-    color: white;
-}
-
-/* WINNER CELEBRATION */
-
-.winner-box {
-
-    text-align: center;
-
-    background:
-    linear-gradient(
-        135deg,
-        rgba(255,215,0,0.15),
-        rgba(255,140,0,0.18)
-    );
-
-    padding: 35px;
-
-    border-radius: 30px;
-
-    border: 2px solid gold;
-
-    animation: pulse 2s infinite;
-
-    box-shadow:
-        0px 0px 30px rgba(255,215,0,0.4);
-}
-
-/* PULSE EFFECT */
-
-@keyframes pulse {
-
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.02);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-/* FOOTER */
-
-.footer {
-    text-align: center;
-    margin-top: 40px;
-    color: silver;
-    font-size: 15px;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# ==========================================
-# TITLE
-# ==========================================
-
-st.markdown("""
-<div class="main-title">
-🗳️Election Prediction
-</div>
-""", unsafe_allow_html=True)
-
-
-# ==========================================
-# LOAD DATA
-# ==========================================
-
-@st.cache_data
-def load_data():
-    return pd.read_csv("eci_results_tamilnadu_2026.csv")
-
-df = load_data()
+# =========================================================
+# DATA CLEANING
+# =========================================================
 
 df = df.dropna()
 
-# ==========================================
-# WINNER COLUMN
-# ==========================================
+# Remove duplicates
+df = df.drop_duplicates()
+
+# =========================================================
+# CREATE TARGET COLUMN (WINNER)
+# =========================================================
 
 max_votes = df.groupby('Constituency')['Total Votes'].transform('max')
 
-df['Winner'] = np.where(
-    df['Total Votes'] == max_votes,
-    1,
-    0
-)
+df['Winner'] = np.where(df['Total Votes'] == max_votes, 1, 0)
 
-# ==========================================
-# ENCODING
-# ==========================================
+print("\n========== WINNER COLUMN CREATED ==========\n")
+print(df[['Constituency', 'Candidate', 'Party', 'Total Votes', 'Winner']].head())
+
+# =========================================================
+# LABEL ENCODING
+# =========================================================
 
 party_encoder = LabelEncoder()
+candidate_encoder = LabelEncoder()
+const_encoder = LabelEncoder()
+
 df['Party_Encoded'] = party_encoder.fit_transform(df['Party'])
 
-const_encoder = LabelEncoder()
+df['Candidate_Encoded'] = candidate_encoder.fit_transform(df['Candidate'])
+
 df['Constituency_Encoded'] = const_encoder.fit_transform(df['Constituency'])
 
-# ==========================================
-# FEATURES
-# ==========================================
+# =========================================================
+# FEATURE ENGINEERING
+# =========================================================
+
+# Vote Share Ratio
+df['Vote_Share'] = df['Total Votes'] / df.groupby('Constituency')['Total Votes'].transform('sum')
+
+# Margin Estimate
+df['Vote_Strength'] = df['EVM Votes'] + df['Postal Votes']
+
+# =========================================================
+# SELECT FEATURES
+# =========================================================
 
 X = df[[
     'EVM Votes',
     'Postal Votes',
     'Total Votes',
     '% Votes',
+    'Vote_Share',
+    'Vote_Strength',
     'Party_Encoded',
+    'Candidate_Encoded',
     'Constituency_Encoded'
 ]]
 
 y = df['Winner']
 
-# ==========================================
-# TRAIN MODEL
-# ==========================================
+# =========================================================
+# TRAIN TEST SPLIT
+# =========================================================
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
-    test_size=0.2,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+print("\nTraining Shape:", X_train.shape)
+print("Testing Shape:", X_test.shape)
+
+# =========================================================
+# MODEL 1 : LOGISTIC REGRESSION
+# =========================================================
+
+lr_model = LogisticRegression(max_iter=5000)
+
+lr_model.fit(X_train, y_train)
+
+lr_pred = lr_model.predict(X_test)
+
+lr_acc = accuracy_score(y_test, lr_pred)
+
+print("\n========== LOGISTIC REGRESSION ==========")
+print("Accuracy:", lr_acc)
+
+# =========================================================
+# MODEL 2 : RANDOM FOREST
+# =========================================================
+
+rf_model = RandomForestClassifier(
+    n_estimators=300,
+    max_depth=15,
     random_state=42
 )
 
-model = XGBClassifier(
-    use_label_encoder=False,
-    eval_metric='logloss'
+rf_model.fit(X_train, y_train)
+
+rf_pred = rf_model.predict(X_test)
+
+rf_acc = accuracy_score(y_test, rf_pred)
+
+print("\n========== RANDOM FOREST ==========")
+print("Accuracy:", rf_acc)
+
+# =========================================================
+# MODEL 3 : XGBOOST (BEST MODEL)
+# =========================================================
+
+xgb_model = XGBClassifier(
+    n_estimators=500,
+    learning_rate=0.05,
+    max_depth=8,
+    subsample=0.9,
+    colsample_bytree=0.9,
+    objective='binary:logistic',
+    eval_metric='logloss',
+    random_state=42
 )
 
-model.fit(X_train, y_train)
+xgb_model.fit(X_train, y_train)
 
-joblib.dump(model, "tamilnadu_model.pkl")
+xgb_pred = xgb_model.predict(X_test)
 
-# ==========================================
-# SIDEBAR
-# ==========================================
+xgb_acc = accuracy_score(y_test, xgb_pred)
 
-st.sidebar.markdown("""
-<div class="sidebar-title">
-🗳️ Navigation
-</div>
-""", unsafe_allow_html=True)
+print("\n========== XGBOOST ==========")
+print("Accuracy:", xgb_acc)
 
-menu = st.sidebar.radio(
-    "",
-    [
-        " Home",
-        " Dataset",
-        " Analytics",
-        " Constituency Winner",
-        " Election Prediction",
-        " Sentiment Analysis"
-    ]
+# =========================================================
+# BEST MODEL SELECTION
+# =========================================================
+
+accuracies = {
+    "Logistic Regression": lr_acc,
+    "Random Forest": rf_acc,
+    "XGBoost": xgb_acc
+}
+
+best_model_name = max(accuracies, key=accuracies.get)
+
+print("\n========== BEST MODEL ==========")
+print("Best Model:", best_model_name)
+
+# =========================================================
+# CLASSIFICATION REPORT
+# =========================================================
+
+print("\n========== CLASSIFICATION REPORT ==========\n")
+
+print(classification_report(y_test, xgb_pred))
+
+# =========================================================
+# CONFUSION MATRIX
+# =========================================================
+
+cm = confusion_matrix(y_test, xgb_pred)
+
+plt.figure(figsize=(6,5))
+
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt='d',
+    cmap='Blues'
 )
 
-# ==========================================
-# HOME
-# ==========================================
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
 
-if menu == " Home":
+plt.show()
 
-    col1, col2, col3 = st.columns(3)
+# =========================================================
+# FEATURE IMPORTANCE
+# =========================================================
 
-    with col1:
-        st.metric(
-            "Total Constituencies",
-            df['Constituency'].nunique()
-        )
+importance = pd.DataFrame({
+    'Feature': X.columns,
+    'Importance': xgb_model.feature_importances_
+})
 
-    with col2:
-        st.metric(
-            "Total Candidates",
-            df['Candidate'].nunique()
-        )
+importance = importance.sort_values(
+    by='Importance',
+    ascending=False
+)
 
-    with col3:
-        st.metric(
-            "Total Parties",
-            df['Party'].nunique()
-        )
+print("\n========== FEATURE IMPORTANCE ==========\n")
+print(importance)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+# Plot Feature Importance
+plt.figure(figsize=(10,6))
 
+sns.barplot(
+    data=importance,
+    x='Importance',
+    y='Feature'
+)
 
-# ==========================================
-# DATASET
-# ==========================================
+plt.title("Feature Importance - XGBoost")
 
-elif menu == " Dataset":
+plt.show()
 
-    st.subheader(" Tamil Nadu Election Dataset")
+# =========================================================
+# MODEL COMPARISON GRAPH
+# =========================================================
 
-    st.dataframe(df, use_container_width=True)
+models = list(accuracies.keys())
+scores = list(accuracies.values())
 
-# ==========================================
-# ANALYTICS
-# ==========================================
+plt.figure(figsize=(8,5))
 
-elif menu == " Analytics":
+bars = plt.bar(models, scores)
 
-    st.subheader(" Election Analytics")
+plt.title("Model Accuracy Comparison")
+plt.ylabel("Accuracy")
 
-    party_votes = df.groupby('Party')['Total Votes'] \
-                    .sum() \
-                    .sort_values(ascending=False) \
-                    .head(10)
-
-    fig = px.bar(
-        x=party_votes.index,
-        y=party_votes.values,
-        color=party_votes.values,
-        text=party_votes.values,
-        title="Top Parties by Votes"
+for bar in bars:
+    yval = bar.get_height()
+    plt.text(
+        bar.get_x() + 0.1,
+        yval + 0.005,
+        round(yval, 4)
     )
 
-    fig.update_layout(
-        template="plotly_dark",
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)'
-    )
+plt.show()
 
-    st.plotly_chart(fig, use_container_width=True)
+# =========================================================
+# PARTY PERFORMANCE ANALYSIS
+# =========================================================
 
-    # PIE CHART
+party_votes = df.groupby('Party')['Total Votes'].sum().sort_values(ascending=False).head(10)
 
-    party_seats = df[df['Winner'] == 1]['Party'].value_counts()
+plt.figure(figsize=(12,6))
 
-    fig2 = px.pie(
-        names=party_seats.index,
-        values=party_seats.values,
-        hole=0.45,
-        title="Seat Share"
-    )
+party_votes.plot(kind='bar')
 
-    fig2.update_layout(
-        template="plotly_dark",
-        paper_bgcolor='rgba(0,0,0,0)'
-    )
+plt.title("Top 10 Parties by Total Votes")
+plt.xlabel("Party")
+plt.ylabel("Votes")
 
-    st.plotly_chart(fig2, use_container_width=True)
+plt.show()
 
-# ==========================================
-# WINNER
-# ==========================================
+# =========================================================
+# FUTURE ELECTION PREDICTION
+# =========================================================
 
-elif menu == " Constituency Winner":
+print("\n========== FUTURE ELECTION PREDICTION ==========\n")
 
-    st.subheader("🏆 Constituency Winner")
+# Example Prediction Input
+party_name = "DMK"
+candidate_name = "Candidate A"
+constituency_name = "Chennai Central"
 
-    constituency = st.selectbox(
-        "Select Constituency",
-        sorted(df['Constituency'].unique())
-    )
+# Encode Values
+party_encoded = party_encoder.transform([party_name])[0]
+candidate_encoded = 0
+const_encoded = 0
 
-    const_data = df[df['Constituency'] == constituency]
+sample_data = pd.DataFrame({
+    'EVM Votes': [80000],
+    'Postal Votes': [1000],
+    'Total Votes': [81000],
+    '% Votes': [48.5],
+    'Vote_Share': [0.48],
+    'Vote_Strength': [81000],
+    'Party_Encoded': [party_encoded],
+    'Candidate_Encoded': [candidate_encoded],
+    'Constituency_Encoded': [const_encoded]
+})
 
-    winner = const_data.loc[
-        const_data['Total Votes'].idxmax()
-    ]
+prediction = xgb_model.predict(sample_data)
 
-    st.markdown(f"""
-    <div class="winner-box">
+probability = xgb_model.predict_proba(sample_data)[0][1]
 
-    </div>
-    """, unsafe_allow_html=True)
+if prediction[0] == 1:
+    print("🏆 Predicted Result: WINNER")
+else:
+    print("❌ Predicted Result: NOT WINNER")
 
-    st.balloons()
+print(f"Winning Probability: {probability*100:.2f}%")
 
-    st.markdown("<br>", unsafe_allow_html=True)
+# =========================================================
+# SAVE MODEL
+# =========================================================
 
-    ranked = const_data.sort_values(
-        by='Total Votes',
-        ascending=False
-    )
+joblib.dump(xgb_model, "tamilnadu_best_model.pkl")
 
-    st.subheader("📋 Candidate Ranking")
+joblib.dump(party_encoder, "party_encoder.pkl")
 
-    st.dataframe(
-        ranked[
-            ['Candidate', 'Party', 'Total Votes', '% Votes']
-        ],
-        use_container_width=True
-    )
+joblib.dump(candidate_encoder, "candidate_encoder.pkl")
 
-# ==========================================
-# PREDICTION
-# ==========================================
+joblib.dump(const_encoder, "constituency_encoder.pkl")
 
-elif menu == "🔮 Election Prediction":
+print("\n✅ MODEL SAVED SUCCESSFULLY")
 
-    st.subheader("🔮 Predict Future Election Winner")
+# =========================================================
+# LOAD MODEL
+# =========================================================
 
-    col1, col2 = st.columns(2)
+loaded_model = joblib.load("tamilnadu_best_model.pkl")
 
-    with col1:
+print("\n✅ MODEL LOADED SUCCESSFULLY")
 
-        evm_votes = st.number_input(
-            "EVM Votes",
-            min_value=0
-        )
-
-        postal_votes = st.number_input(
-            "Postal Votes",
-            min_value=0
-        )
-
-        total_votes = st.number_input(
-            "Total Votes",
-            min_value=0
-        )
-
-    with col2:
-
-        vote_percent = st.slider(
-            "Vote Percentage",
-            0.0,
-            100.0,
-            45.0
-        )
-
-        party = st.selectbox(
-            "Select Party",
-            sorted(df['Party'].unique())
-        )
-
-        constituency = st.selectbox(
-            "Select Constituency",
-            sorted(df['Constituency'].unique())
-        )
-
-    party_encoded = party_encoder.transform([party])[0]
-
-    const_encoded = const_encoder.transform([constituency])[0]
-
-    if st.button("🚀 Predict Winner"):
-
-        sample = pd.DataFrame({
-
-            'EVM Votes': [evm_votes],
-            'Postal Votes': [postal_votes],
-            'Total Votes': [total_votes],
-            '% Votes': [vote_percent],
-            'Party_Encoded': [party_encoded],
-            'Constituency_Encoded': [const_encoded]
-
-        })
-
-        prediction = model.predict(sample)
-
-        probability = model.predict_proba(sample)[0][1]
-
-        if prediction[0] == 1:
-
-            st.balloons()
-
-            st.snow()
-
-            st.markdown(f"""
-            <div class="winner-box">
-
-                <h1>🎊 PARTY CELEBRATION 🎊</h1>
-
-                <h1>🏆 WINNER PREDICTED</h1>
-
-                <h2>{party}</h2>
-
-                <h2>🔥 Winning Probability</h2>
-
-                <h1>{round(probability*100,2)}%</h1>
-
-            </div>
-            """, unsafe_allow_html=True)
-
-            st.progress(float(probability))
-
-        else:
-
-            st.error("❌ Predicted Result: NOT WINNER")
-
-            st.progress(float(probability))
-
-            st.write(
-                f"Winning Probability: {round(probability*100,2)}%"
-            )
-
-# ==========================================
-# SENTIMENT ANALYSIS
-# ==========================================
-
-elif menu == "📈 Sentiment Analysis":
-
-    st.subheader("📈 Political Sentiment Analysis")
-
-    sentiment_data = pd.DataFrame({
-        'Sentiment': ['Positive', 'Negative', 'Neutral'],
-        'Count': [65, 20, 15]
-    })
-
-    fig = px.bar(
-        sentiment_data,
-        x='Sentiment',
-        y='Count',
-        color='Sentiment',
-        text='Count',
-        title='Public Sentiment Analysis'
-    )
-
-    fig.update_layout(
-        template="plotly_dark",
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)'
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-# ==========================================
-# FOOTER
-# ==========================================
-
+# =========================================================
+# END OF PROJECT
+# =========================================================
