@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 # ==========================================
 
 st.set_page_config(
-    page_title="Tamil Nadu Election Prediction",
+    page_title="Election Prediction",
     page_icon="🗳️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -357,7 +357,7 @@ p, label, span, div {
 
 st.markdown("""
 <div class="main-title">
-🗳️ Tamil Nadu Election Prediction
+🗳️Election Prediction
 </div>
 """, unsafe_allow_html=True)
 
