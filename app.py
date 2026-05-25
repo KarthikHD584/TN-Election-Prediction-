@@ -561,14 +561,6 @@ elif menu == " Constituency Winner":
     st.markdown(f"""
     <div class="winner-box">
 
-        <h1>🎉 WINNER 🎉</h1>
-
-        <h2>{winner['Candidate']}</h2>
-
-        <h3>{winner['Party']}</h3>
-
-        <h2>🏆 {int(winner['Total Votes'])} Votes</h2>
-
     </div>
     """, unsafe_allow_html=True)
 
